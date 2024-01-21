@@ -19,7 +19,13 @@ class Client:
         self.username = input(f"[?] Username: ")
         self.client_socket.sendall(self.username.encode())
 
+        thread = threading.Thread(target=self.__receive_message)
+        thread.daemon = True
+        thread.start()
+
         self.__render_chat()
+
+        self.client_socket.close()
 
     def __render_chat(self):
         self.window = Tk()
@@ -44,12 +50,7 @@ class Client:
         exit_widget = Button(self.window, text="Exit", command=lambda: self.__exit())
         exit_widget.pack(padx=5, pady=5, fill=X, expand=1)
 
-        thread = threading.Thread(target=self.__receive_message)
-        thread.daemon = True
-        thread.start()
-
         self.window.mainloop()
-        self.client_socket.close()
 
     def __send_message(self):
         message = f"({self.username}) > {self.input_widget.get()}\n"
