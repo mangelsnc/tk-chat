@@ -25,21 +25,21 @@ class Server:
             client_socket, client_address = server_socket.accept()
             self.clients.append(client_socket)
 
-            thread = threading.Thread(target=self.client_thread, args=(client_socket, client_address))
+            thread = threading.Thread(target=self.__client_thread, args=(client_socket, client_address))
             thread.daemon = True
             thread.start()
 
         server_socket.close()
 
-    def client_thread(self, client_socket, client_address):
+    def __client_thread(self, client_socket, client_address):
         username = client_socket.recv(1024).decode()
         self.usernames[client_socket] = username
 
-        print(f"[+] User \"{username}\" connected at {client_address}")
+        print(f"[+] User \"{username}\" connected from {client_address}")
 
         for client in self.clients:
             if client is not client_socket:
-                client.sendall(f"\nServer > ({username}) has connected\n\n".encode())
+                client.sendall(f"\nServer > ({username}) joined the chat\n\n".encode())
 
         while True:
             try:
@@ -48,11 +48,21 @@ class Server:
                 if not message:
                     break
 
+                if message == '!users':
+                    users = "\n".join(self.usernames.values())
+                    client_socket.sendall(f"\n[+] Connected users:\n{users}\n\n".encode())
+                    continue
+
+
                 for client in self.clients:
                     if client is not client_socket:
                         client.sendall(message.encode())
             except:
                 break
+
+        client_socket.close()
+        self.clients.remove(client_socket)
+        del self.usernames[client_socket]
 
 if __name__ == "__main__":
     Server().run()
