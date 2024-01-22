@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+import sys
 import socket
 import threading
 from tkinter import *
 from tkinter.scrolledtext import ScrolledText
+from tkinter.simpledialog import askstring as DialogBox
 
 class Client:
 
@@ -11,12 +13,16 @@ class Client:
         self.SERVER_HOST = server_host
         self.SERVER_PORT = server_port
 
-        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client_socket.connect((self.SERVER_HOST, self.SERVER_PORT))
+        try:
+            self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.client_socket.connect((self.SERVER_HOST, self.SERVER_PORT))
+        except:
+            print(f"[!] Server at {self.SERVER_HOST}:{self.SERVER_PORT} unavailable")
+            sys.exit()
 
         print(f"[+] Starting client")
 
-        self.username = input(f"[?] Username: ")
+        self.username = DialogBox("Chat", "Username")
         self.client_socket.sendall(self.username.encode())
 
         thread = threading.Thread(target=self.__receive_message)
