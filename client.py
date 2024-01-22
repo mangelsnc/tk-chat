@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import ssl
 import sys
 import socket
 import threading
@@ -15,6 +16,9 @@ class Client:
 
         try:
             self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+            ssl_context.load_verify_locations("server-cert.pem")
+            self.client_socket = ssl_context.wrap_socket(self.client_socket, server_hostname=self.SERVER_HOST)
             self.client_socket.connect((self.SERVER_HOST, self.SERVER_PORT))
         except:
             print(f"[!] Server at {self.SERVER_HOST}:{self.SERVER_PORT} unavailable")

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import ssl
 import socket
 import threading
 
@@ -17,6 +18,9 @@ class Server:
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server_socket.bind((self.SERVER_HOST, self.SERVER_PORT))
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ssl_context.load_cert_chain("server-cert.pem", "server-key.key")
+        server_socket = ssl_context.wrap_socket(sock=server_socket, server_side=True)
         server_socket.listen()
 
         print(f"[+] Server started and listening for connetions at port {self.SERVER_PORT}...")
